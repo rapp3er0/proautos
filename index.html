@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proautos - Vehículos de Calidad</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <img src="logo.png" alt="Proautos Logo" style="height: 60px;">
+            </div>
+            <div class="nav-links">
+                <a href="#inicio">Inicio</a>
+                <a href="#inventario">Inventario</a>
+                <a href="#servicios">Servicios</a>
+                <a href="#pagos">Métodos de Pago</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="inicio" class="hero">
+        <div class="hero-content">
+            <h1>Encuentra tu próximo vehículo hoy</h1>
+            <p>Compramos, vendemos, cambiamos e importamos vehículos al mejor precio del mercado. Además, ofrecemos repuestos y accesorios de calidad.</p>
+            <a href="#inventario" class="btn btn-primary btn-large">Ver Inventario <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div class="hero-overlay"></div>
+    </header>
+
+    <!-- Filter Section -->
+    <section class="filters-section">
+        <div class="container">
+            <div class="filters-container glass-panel">
+                <h2><i class="fa-solid fa-filter"></i> Buscar Vehículo</h2>
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label>Marca</label>
+                        <select id="filter-make">
+                            <option value="">Todas las marcas</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Modelo</label>
+                        <select id="filter-model">
+                            <option value="">Todos los modelos</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Año (Mínimo)</label>
+                        <input type="number" id="filter-year-min" placeholder="Ej. 2010">
+                    </div>
+                    <div class="filter-group">
+                        <label>Precio Máximo (LPS)</label>
+                        <input type="number" id="filter-price-max" placeholder="Ej. 500000">
+                    </div>
+                </div>
+                <div class="filter-actions">
+                    <button class="btn btn-secondary" id="btn-clear-filters">Limpiar Filtros</button>
+                    <button class="btn btn-primary" id="btn-apply-filters">Aplicar Filtros</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Inventory Section -->
+    <section id="inventario" class="inventory-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Nuestro Inventario</h2>
+                <p>Vehículos disponibles, revisados y listos para ti.</p>
+            </div>
+            
+            <div class="loader-container" id="inventory-loader">
+                <div class="spinner"></div>
+                <p>Cargando vehículos...</p>
+            </div>
+
+            <div class="inventory-grid" id="inventory-grid">
+                <!-- Vehicle Cards via JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Payment Methods Section -->
+    <section id="pagos" class="payments-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Métodos de Pago</h2>
+                <p>Facilitamos tu compra con múltiples opciones de pago seguras.</p>
+            </div>
+            <div class="payments-grid">
+                <div class="payment-card glass-panel">
+                    <i class="fa-solid fa-building-columns payment-icon"></i>
+                    <h3>Transferencias Nacionales</h3>
+                    <p>Aceptamos transferencias directas a nuestras cuentas bancarias empresariales.</p>
+                    <div class="bank-logos">
+                        <div class="bank-badge">BAC Credomatic</div>
+                        <div class="bank-badge disabled">Atlántida (Próximamente)</div>
+                        <div class="bank-badge disabled">Ficohsa (Próximamente)</div>
+                    </div>
+                </div>
+                <div class="payment-card glass-panel">
+                    <i class="fa-brands fa-bitcoin payment-icon bitcoin"></i>
+                    <h3>Criptomonedas</h3>
+                    <p>Paga tu prima o vehículo completo usando Bitcoin de forma rápida y sin fronteras.</p>
+                    <button class="btn btn-secondary" onclick="document.getElementById('btc-modal').classList.add('active')">Ver QR de Pago</button>
+                </div>
+                <div class="payment-card glass-panel">
+                    <i class="fa-solid fa-file-contract payment-icon finance"></i>
+                    <h3>Financiamiento Externo</h3>
+                    <p>Tú pagas la prima al autolote y la financiera cubre el resto del vehículo a tu nombre.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Finance Calculator & Lead Modal -->
+    <div id="finance-modal" class="modal">
+        <div class="modal-content glass-panel" style="max-width: 600px; text-align: left;">
+            <span class="close-modal" onclick="closeFinanceModal()">&times;</span>
+            <h2 style="margin-bottom: 0.5rem; color: var(--primary-color); font-size: 1.5rem;"><i class="fa-solid fa-file-invoice-dollar"></i> Cotización Instantánea</h2>
+            <h3 id="finance-car-title" style="margin-bottom: 1.5rem; color: var(--text-muted); font-size: 1.1rem;">Vehículo</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                <input type="text" id="lead-name" placeholder="Tu nombre" class="form-input">
+                <input type="tel" id="lead-phone" placeholder="Tu teléfono (Ej. 99998888)" class="form-input">
+            </div>
+
+            <div style="background: rgba(0,0,0,0.3); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+                <label style="display: flex; justify-content: space-between; margin-bottom: 1rem; font-weight: bold;">
+                    <span>Tu Prima (Enganche):</span>
+                    <span id="finance-prima-display" style="color: var(--primary-color); font-size: 1.2rem;">Lps. 0</span>
+                </label>
+                <input type="range" id="finance-slider" min="0" max="100" value="0" step="1000" style="width: 100%; margin-bottom: 0.5rem;" oninput="calculateFinance()">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
+                    <span id="finance-min-prima">Min (40%): Lps. 0</span>
+                    <span id="finance-max-prima">Max: Lps. 0</span>
+                </div>
+
+                <div style="margin-top: 1.5rem; margin-bottom: 0.5rem; font-weight: bold; font-size: 0.9rem;">Plazo en meses:</div>
+                <div class="term-selector" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+                    <button class="term-btn active" data-months="12" onclick="selectTerm(12)">12</button>
+                    <button class="term-btn" data-months="24" onclick="selectTerm(24)">24</button>
+                    <button class="term-btn" data-months="36" onclick="selectTerm(36)">36</button>
+                    <button class="term-btn" data-months="48" onclick="selectTerm(48)">48</button>
+                    <button class="term-btn" data-months="60" onclick="selectTerm(60)">60</button>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    <div>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Monto a Financiar:</span><br>
+                        <strong id="finance-loan-amount" style="font-size: 1.1rem;">Lps. 0</strong>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Cuota Mensual Estimada:</span><br>
+                        <strong id="finance-monthly-payment" style="font-size: 1.5rem; color: var(--primary-color);">Lps. 0</strong>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-large" style="width: 100%;" onclick="submitFinanceLead()">
+                <i class="fa-solid fa-paper-plane"></i> Solicitar Financiamiento
+            </button>
+            <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 1rem;">
+                *Cálculo referencial (Tasa 18% anual). Sujeto a análisis de la financiera. Tu información está segura y será enviada a nuestros asesores.
+            </p>
+        </div>
+    </div>
+
+    <!-- Lightbox Modal para Galería -->
+    <div id="lightbox-modal" class="lightbox-modal">
+        <span class="lightbox-close">&times;</span>
+        <button class="lightbox-prev"><i class="fa-solid fa-chevron-left"></i></button>
+        <img class="lightbox-content" id="lightbox-img">
+        <button class="lightbox-next"><i class="fa-solid fa-chevron-right"></i></button>
+        <div id="lightbox-caption"></div>
+    </div>
+
+    <!-- Bitcoin QR Modal -->
+    <div id="btc-modal" class="modal">
+        <div class="modal-content glass-panel">
+            <span class="close-modal" onclick="this.closest('.modal').classList.remove('active')">&times;</span>
+            <h2>Pago con Bitcoin</h2>
+            <p>Escanea este código QR con tu billetera (wallet) para realizar el pago.</p>
+            <div class="qr-container">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=bitcoin:1ProautosWalletGenerica?amount=0" alt="Bitcoin QR">
+            </div>
+            <p class="crypto-note">Nota: El pago es procesado de inmediato.</p>
+        </div>
+    </div>
+
+    <!-- Floating WhatsApp Button -->
+    <a href="#" id="wa-button" class="wa-float" target="_blank">
+        <i class="fa-brands fa-whatsapp my-float"></i>
+    </a>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3><img src="logo.png" alt="Proautos Logo" style="height: 40px; vertical-align: middle;"></h3>
+                    <p>Tu mejor opción en vehículos en Honduras. Calidad, garantía y el mejor servicio.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Servicios</h4>
+                    <ul>
+                        <li>Venta de Vehículos</li>
+                        <li>Compra y Cambios</li>
+                        <li>Importación de USA</li>
+                        <li>Repuestos y Accesorios</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Proautos. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="main.js"></script>
+</body>
+</html>
