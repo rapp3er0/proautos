@@ -762,3 +762,96 @@ footer {
     background: var(--primary-color);
     border-color: var(--primary-color);
 }
+
+/* =========================================
+   Sobre Nosotros Section
+   ========================================= */
+.nosotros-section {
+    padding: 4rem 0;
+}
+
+.nosotros-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    padding: 3rem;
+    align-items: center;
+}
+
+.nosotros-text h3 {
+    font-size: 1.8rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.nosotros-text p {
+    margin-bottom: 1.5rem;
+    font-size: 1.05rem;
+}
+
+.nosotros-list {
+    list-style: none;
+    margin-bottom: 2rem;
+}
+
+.nosotros-list li {
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-main);
+}
+
+.nosotros-list i {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.nosotros-contact {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 1.2rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.nosotros-contact p {
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+}
+
+.nosotros-contact p:last-child {
+    margin-bottom: 0;
+}
+
+.nosotros-image {
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border-color);
+}
+
+.nosotros-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.5s ease;
+}
+
+.nosotros-image:hover img {
+    transform: scale(1.05); /* Pequeño zoom elegante al pasar el mouse */
+}
+
+/* Responsivo para celulares (pone la imagen arriba y el texto abajo) */
+@media (max-width: 900px) {
+    .nosotros-content {
+        grid-template-columns: 1fr;
+        padding: 2rem;
+        gap: 2rem;
+    }
+    
+    .nosotros-image {
+        order: -1; /* Hace que la imagen aparezca antes que el texto en móviles */
+    }
+}
