@@ -1,4 +1,4 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZ71MjU5mMmkpocujnUwb11Z3wSo2sm3i2f2R6vsnidoIK3cSB16tsR-SZoipSbr6_/exec';
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1gSgbmyPjV2fDHBu0V5u13voWyGG9EnDHRQmjnDIcC_A/gviz/tq?tqx=out:json&gid=0';
 const WA_NUMBER = '50489717182';
 
 // DOM Elements
@@ -25,12 +25,76 @@ let currentGalleryImages = [];
 let currentGalleryIndex = 0;
 let vendedor = '';
 
+function normalizeImageUrl(url) {
+    if (!url) return '';
+
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl) return '';
+
+    const driveMatch = trimmedUrl.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+    if (driveMatch) {
+        return `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w1000`;
+    }
+
+    return trimmedUrl;
+}
+
+function getVehiclePrima(car) {
+    const price = Number(car.price);
+    const prima = Number(car.prima);
+
+    if (Number.isFinite(prima) && prima >= 0) {
+        return prima;
+    }
+
+    if (Number.isFinite(price) && price > 0) {
+        return Math.round(price * 0.4);
+    }
+
+    return 0;
+}
+
+function parseSheetInventory(rawText) {
+    const match = rawText.match(/setResponse\((.*)\)\s*;?\s*$/s);
+
+    if (!match) {
+        throw new Error('No se pudo extraer la respuesta del sheet');
+    }
+
+    const parsed = JSON.parse(match[1]);
+    const rows = parsed?.table?.rows || [];
+
+    return rows.map(row => {
+        const cells = row.c || [];
+        const getCell = (index, fallback = null) => {
+            if (!cells[index]) return fallback;
+            if (cells[index].v === undefined || cells[index].v === null) return fallback;
+            return cells[index].v;
+        };
+
+        return {
+            make: getCell(0, '') || '',
+            model: getCell(1, '') || '',
+            year: Number(getCell(2, 0)) || 0,
+            price: Number(getCell(3, 0)) || 0,
+            mileage: getCell(4, '') || '',
+            motor: getCell(5, '') || '',
+            status: getCell(6, '') || '',
+            images: getCell(7, '') || '',
+            dateAdded: getCell(8, '') || '',
+            placa: getCell(9, '') || '',
+            precioGanga: getCell(10, '') || '',
+            comentarios: getCell(11, '') || '',
+            prima: Number(getCell(12, NaN))
+        };
+    });
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     checkVendedor();
     setupWhatsAppButton();
     loadInventory();
-    setupLightbox();
 });
 
 // Referrals
@@ -54,14 +118,58 @@ function setupWhatsAppButton() {
     waButton.href = `https://wa.me/${WA_NUMBER}?text=${encodedMessage}`;
 }
 
+function loadSheetDataViaScript() {
+    return new Promise((resolve, reject) => {
+        const timeoutId = window.setTimeout(() => {
+            cleanup();
+            reject(new Error('Tiempo de espera agotado al cargar el sheet'));
+        }, 15000);
+
+        const previousSetResponse = window.google?.visualization?.Query?.setResponse;
+
+        const cleanup = () => {
+            window.clearTimeout(timeoutId);
+            if (script.parentNode) {
+                script.parentNode.removeChild(script);
+            }
+
+            if (previousSetResponse) {
+                window.google.visualization.Query.setResponse = previousSetResponse;
+            } else {
+                delete window.google?.visualization?.Query?.setResponse;
+            }
+        };
+
+        const script = document.createElement('script');
+        script.src = SHEET_URL;
+        script.async = true;
+
+        window.google = window.google || {};
+        window.google.visualization = window.google.visualization || {};
+        window.google.visualization.Query = window.google.visualization.Query || {};
+        window.google.visualization.Query.setResponse = (response) => {
+            cleanup();
+            resolve(response);
+        };
+
+        script.onerror = () => {
+            cleanup();
+            reject(new Error('No se pudo cargar el script del sheet'));
+        };
+
+        document.head.appendChild(script);
+    });
+}
+
 // Data Loading
 async function loadInventory() {
     loader.style.display = 'flex';
     inventoryGrid.innerHTML = '';
     
     try {
-        const response = await fetch(SCRIPT_URL);
-        const data = await response.json();
+        const response = await loadSheetDataViaScript();
+        const rawText = `/*O_o*/\ngoogle.visualization.Query.setResponse(${JSON.stringify(response)});`;
+        const data = parseSheetInventory(rawText);
         
         // Filter only cars that are not sold, or just show all but label them
         allVehicles = data.filter(car => car.status !== 'Vendido'); 
@@ -74,7 +182,8 @@ async function loadInventory() {
     } catch (error) {
         console.error('Error loading inventory:', error);
         loader.style.display = 'none';
-        inventoryGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: #f87171;">Error al cargar el inventario. Por favor, intente más tarde.</p>';
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+        inventoryGrid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color: #f87171;">Error al cargar el inventario. ${errorMessage}</p>`;
     }
 }
 
@@ -112,11 +221,12 @@ function renderVehicles(vehicles) {
     }
 
     vehicles.forEach((car, index) => {
-        const imageUrls = car.images ? car.images.split(',').map(url => url.trim()) : [];
-        const mainImage = imageUrls.length > 0 ? imageUrls[0] : 'https://via.placeholder.com/400x300?text=Sin+Imagen';
+        const imageUrls = car.images
+            ? car.images.split(',').map(normalizeImageUrl).filter(Boolean)
+            : [];
+        const mainImage = imageUrls.length > 0 ? imageUrls[0] : 'bg.jpg';
         const price = Number(car.price);
-        // Use the vehicle's own prima field; fallback to 40% if not defined
-        const primaMin = Number(car.prima) || Math.round(price * 0.40);
+        const primaMin = getVehiclePrima(car);
         
         const card = document.createElement('div');
         card.className = 'car-card';
