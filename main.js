@@ -187,28 +187,89 @@ async function loadInventory() {
     }
 }
 
+// Build a lookup map: make -> sorted array of models
+let makeModelsMap = {};
+
 function populateFilters() {
-    const makes = new Set();
-    const models = new Set();
-    
+    makeModelsMap = {};
+
     allVehicles.forEach(car => {
-        if(car.make) makes.add(car.make);
-        if(car.model) models.add(car.model);
+        const make = (car.make || '').trim();
+        const model = (car.model || '').trim();
+        if (!make) return;
+        if (!makeModelsMap[make]) makeModelsMap[make] = new Set();
+        if (model) makeModelsMap[make].add(model);
     });
-    
-    makes.forEach(make => {
+
+    // Populate makes dropdown (sorted)
+    const sortedMakes = Object.keys(makeModelsMap).sort();
+    filterMake.innerHTML = '<option value="">Todas las marcas</option>';
+    sortedMakes.forEach(make => {
         const option = document.createElement('option');
         option.value = make;
         option.textContent = make;
         filterMake.appendChild(option);
     });
-    
+
+    // Reset model dropdown
+    updateModelDropdown('');
+}
+
+// Rebuild model dropdown based on selected make
+function updateModelDropdown(selectedMake) {
+    filterModel.innerHTML = '<option value="">Todos los modelos</option>';
+
+    let models = [];
+    if (selectedMake && makeModelsMap[selectedMake]) {
+        models = [...makeModelsMap[selectedMake]].sort();
+    } else {
+        // No make selected: show all models (union)
+        const allModels = new Set();
+        Object.values(makeModelsMap).forEach(set => set.forEach(m => allModels.add(m)));
+        models = [...allModels].sort();
+    }
+
     models.forEach(model => {
         const option = document.createElement('option');
         option.value = model;
         option.textContent = model;
         filterModel.appendChild(option);
     });
+}
+
+// When make changes -> update models and re-apply filters live
+filterMake.addEventListener('change', () => {
+    filterModel.value = '';           // reset model selection
+    updateModelDropdown(filterMake.value);
+    applyFilters();
+});
+
+// Model, year, price -> apply live too
+filterModel.addEventListener('change', applyFilters);
+filterYearMin.addEventListener('input', applyFilters);
+filterPriceMax.addEventListener('input', applyFilters);
+
+function applyFilters() {
+    const make  = filterMake.value.trim().toLowerCase();
+    const model = filterModel.value.trim().toLowerCase();
+    const yearMin  = parseInt(filterYearMin.value)  || 0;
+    const priceMax = parseInt(filterPriceMax.value) || Infinity;
+
+    const filtered = allVehicles.filter(car => {
+        const carMake  = (car.make  || '').toLowerCase();
+        const carModel = (car.model || '').toLowerCase();
+        const carYear  = parseInt(car.year)  || 0;
+        const carPrice = parseInt(car.price) || 0;
+
+        const matchMake  = !make  || carMake  === make;
+        const matchModel = !model || carModel === model;
+        const matchYear  = carYear  >= yearMin;
+        const matchPrice = carPrice <= priceMax;
+
+        return matchMake && matchModel && matchYear && matchPrice;
+    });
+
+    renderVehicles(filtered);
 }
 
 // Rendering
@@ -368,33 +429,18 @@ window.contactWaForCar = function(make, model, year) {
     window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
 }
 
-// Filtering Logic
+// Apply button still scrolls to results
 btnApplyFilters.addEventListener('click', () => {
-    const make = filterMake.value.toLowerCase();
-    const model = filterModel.value.toLowerCase();
-    const yearMin = parseInt(filterYearMin.value) || 0;
-    const priceMax = parseInt(filterPriceMax.value) || Infinity;
-    
-    const filtered = allVehicles.filter(car => {
-        const matchMake = make === '' || (car.make && car.make.toLowerCase().includes(make));
-        const matchModel = model === '' || (car.model && car.model.toLowerCase().includes(model));
-        const matchYear = (parseInt(car.year) || 0) >= yearMin;
-        const matchPrice = (parseInt(car.price) || 0) <= priceMax;
-        
-        return matchMake && matchModel && matchYear && matchPrice;
-    });
-    
-    renderVehicles(filtered);
-    
-    // Scroll to inventory
+    applyFilters();
     document.getElementById('inventario').scrollIntoView({ behavior: 'smooth' });
 });
 
 btnClearFilters.addEventListener('click', () => {
-    filterMake.value = '';
+    filterMake.value  = '';
     filterModel.value = '';
-    filterYearMin.value = '';
+    filterYearMin.value  = '';
     filterPriceMax.value = '';
+    updateModelDropdown('');
     renderVehicles(allVehicles);
 });
 
