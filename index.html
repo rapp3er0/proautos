@@ -35,6 +35,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- CSS -->
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -56,14 +58,81 @@
         </div>
     </nav>
 
+    <!-- Google Sign-In Popup -->
+    <div id="google-signin-popup" class="google-popup">
+        <button class="google-popup-close" id="google-popup-close" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+        <div class="google-popup-header">
+            <img src="logo.png" alt="Proautos" class="google-popup-logo">
+            <h3>¡Bienvenido a Proautos!</h3>
+            <p>Inicia sesión para guardar tus vehículos favoritos y recibir ofertas personalizadas.</p>
+        </div>
+        <div id="g_id_onload"
+            data-client_id="YOUR_GOOGLE_CLIENT_ID"
+            data-context="signin"
+            data-ux_mode="popup"
+            data-callback="handleGoogleSignIn"
+            data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin google-signin-btn"
+            data-type="standard"
+            data-shape="pill"
+            data-theme="filled_blue"
+            data-text="signin_with"
+            data-size="large"
+            data-logo_alignment="left">
+        </div>
+        <p class="google-popup-note">Al iniciar sesión aceptas nuestros <a href="#">Términos de Uso</a>.</p>
+    </div>
+    <div id="google-popup-overlay" class="google-popup-overlay"></div>
+
     <!-- Hero Section -->
     <header id="inicio" class="hero">
-        <div class="hero-content">
-            <h1>Encuentra tu próximo vehículo hoy</h1>
-            <p>Compramos, vendemos, cambiamos e importamos vehículos al mejor precio del mercado. Además, ofrecemos repuestos y accesorios de calidad.</p>
-            <a href="#inventario" class="btn btn-primary btn-large">Ver Inventario <i class="fa-solid fa-arrow-right"></i></a>
-        </div>
         <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="hero-badge"><i class="fa-solid fa-star"></i> #1 Autolote en San Pedro Sula</div>
+            <h1>Encuentra tu próximo vehículo hoy</h1>
+            <p>Compramos, vendemos, cambiamos e importamos vehículos al mejor precio del mercado.</p>
+
+            <!-- Vehicle Category Chips -->
+            <div class="hero-categories">
+                <button class="category-chip active" data-category="todos" onclick="filterByCategory('todos')">
+                    <i class="fa-solid fa-th"></i> Todos
+                </button>
+                <button class="category-chip" data-category="sedan" onclick="filterByCategory('sedan')">
+                    <span class="chip-emoji">🚗</span> Sedán
+                </button>
+                <button class="category-chip" data-category="suv" onclick="filterByCategory('suv')">
+                    <span class="chip-emoji">🚙</span> SUV / Pick-up
+                </button>
+                <button class="category-chip" data-category="van" onclick="filterByCategory('van')">
+                    <span class="chip-emoji">🚐</span> Van / Minivan
+                </button>
+                <button class="category-chip" data-category="deportivo" onclick="filterByCategory('deportivo')">
+                    <span class="chip-emoji">🏎️</span> Deportivo
+                </button>
+                <button class="category-chip" data-category="camion" onclick="filterByCategory('camion')">
+                    <span class="chip-emoji">🚛</span> Camión
+                </button>
+            </div>
+
+            <!-- Hero Search Box -->
+            <div class="hero-search-box">
+                <div class="hero-search-input-wrap">
+                    <i class="fa-solid fa-search hero-search-icon"></i>
+                    <input type="text" id="hero-search-input" class="hero-search-input"
+                        placeholder="Busca por marca, modelo o año... Ej: Toyota Hilux 2020"
+                        autocomplete="off">
+                </div>
+                <div class="hero-search-actions">
+                    <button class="btn btn-primary hero-search-btn" id="btn-hero-search" onclick="executeHeroSearch()">
+                        <i class="fa-solid fa-search"></i> Buscar
+                    </button>
+                    <a href="#inventario" class="btn btn-secondary hero-search-btn">
+                        <i class="fa-solid fa-list"></i> Ver Inventario Completo
+                    </a>
+                </div>
+            </div>
+        </div>
     </header>
 
     <!-- Filter Section -->
@@ -392,6 +461,6 @@
     </footer>
 
     <!-- Scripts -->
-    <script src="main.js?v=2026-05-25-02"></script>
+    <script src="main.js?v=2026-06-05-01"></script>
 </body>
 </html>

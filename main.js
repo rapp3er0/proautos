@@ -490,3 +490,165 @@ document.addEventListener('keydown', (e) => {
     if(e.key === 'ArrowLeft') lightboxPrev.onclick();
     if(e.key === 'ArrowRight') lightboxNext.onclick();
 });
+
+/* =========================================
+   Google Sign-In Popup
+   ========================================= */
+(function initGooglePopup() {
+    const popup = document.getElementById('google-signin-popup');
+    const closeBtn = document.getElementById('google-popup-close');
+
+    // Don't show if user dismissed it this session
+    if (sessionStorage.getItem('proautos_popup_dismissed')) return;
+
+    // Show popup after 3 seconds
+    const showTimer = setTimeout(() => {
+        popup.classList.add('visible');
+    }, 3000);
+
+    closeBtn.addEventListener('click', () => {
+        popup.classList.remove('visible');
+        sessionStorage.setItem('proautos_popup_dismissed', '1');
+        clearTimeout(showTimer);
+    });
+})();
+
+// Google Sign-In callback
+window.handleGoogleSignIn = function(response) {
+    const popup = document.getElementById('google-signin-popup');
+
+    // Decode JWT to get user info
+    try {
+        const base64Url = response.credential.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const payload = JSON.parse(window.atob(base64));
+
+        // Update popup to show logged-in state
+        popup.innerHTML = `
+            <button class="google-popup-close" onclick="this.closest('.google-popup').classList.remove('visible')" aria-label="Cerrar">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="google-popup-header">
+                <div class="google-user-info">
+                    <img src="${payload.picture}" alt="${payload.name}">
+                    <div>
+                        <div class="user-name">${payload.name}</div>
+                        <div class="user-email">${payload.email}</div>
+                    </div>
+                </div>
+                <h3 style="margin-top:1rem;">¡Sesión iniciada!</h3>
+                <p>Ahora puedes guardar tus vehículos favoritos.</p>
+            </div>
+        `;
+        sessionStorage.setItem('proautos_user', JSON.stringify({ name: payload.name, email: payload.email, picture: payload.picture }));
+
+        // Auto-close after 4 seconds
+        setTimeout(() => popup.classList.remove('visible'), 4000);
+    } catch(e) {
+        console.log('Google sign-in received.');
+        popup.classList.remove('visible');
+    }
+};
+
+/* =========================================
+   Hero Search Bar
+   ========================================= */
+window.executeHeroSearch = function() {
+    const query = document.getElementById('hero-search-input').value.trim().toLowerCase();
+    if (!query) {
+        document.getElementById('inventario').scrollIntoView({ behavior: 'smooth' });
+        return;
+    }
+
+    // Filter vehicles by query (matches make, model, year, motor)
+    const results = allVehicles.filter(car => {
+        const text = `${car.make} ${car.model} ${car.year} ${car.motor}`.toLowerCase();
+        return text.includes(query);
+    });
+
+    renderVehicles(results);
+
+    // Scroll to inventory
+    document.getElementById('inventario').scrollIntoView({ behavior: 'smooth' });
+
+    // Show search result context in section header
+    const headerP = document.querySelector('.inventory-section .section-header p');
+    if (headerP) {
+        if (results.length > 0) {
+            headerP.textContent = `${results.length} resultado(s) para "${document.getElementById('hero-search-input').value}"`;
+            headerP.style.color = '#a3e635';
+        } else {
+            headerP.textContent = `No encontramos "${document.getElementById('hero-search-input').value}". Mostrando todo el inventario.`;
+            headerP.style.color = '#f87171';
+            setTimeout(() => renderVehicles(allVehicles), 2000);
+        }
+    }
+};
+
+// Allow Enter key to trigger search
+document.getElementById('hero-search-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') window.executeHeroSearch();
+});
+
+/* =========================================
+   Category Chip Filter
+   ========================================= */
+// Keywords map: category slug -> array of model keywords (lowercase)
+const CATEGORY_KEYWORDS = {
+    sedan: ['sentra', 'corolla', 'civic', 'altima', 'camry', 'elantra', 'aveo', 'spark', 'cobalt', 'cruze', 'jetta', 'passat', 'accord', 'fusion', 'malibu', 'impala', 'charger', 'mustang', 'sedan', 'yaris', 'vios', 'demio', 'mazda 3', 'mazda3'],
+    suv: ['rav4', 'crv', 'cr-v', 'hrv', 'hr-v', 'pilot', 'passport', 'highlander', 'runner', '4runner', 'rogue', 'pathfinder', 'murano', 'qashqai', 'tucson', 'santa', 'sportage', 'sorento', 'outlander', 'eclipse', 'hilux', 'tacoma', 'tundra', 'f-150', 'f150', 'ranger', 'frontier', 'colorado', 'silverado', 'sierra', 'pickup', 'pick-up', 'suv', 'fortuner', 'land', 'cruiser', 'prado', 'surf', '4x4', 'pajero', 'montero', 'xtrail', 'x-trail'],
+    van: ['odyssey', 'sienna', 'sedona', 'caravan', 'town', 'country', 'villager', 'quest', 'uplander', 'venture', 'van', 'minivan', 'hiace', 'h1', 'h-1', 'starex', 'urvan'],
+    deportivo: ['mustang', 'camaro', 'challenger', 'corvette', 'miata', 'rx8', 'rx-8', 'supra', 'gtr', 'gt-r', 'sti', 'wrx', 'evo', 'evolution', 'sport', 'coupe', 'coupé', 'roadster'],
+    camion: ['truck', 'camion', 'camión', 'box truck', 'canter', 'hino', 'isuzu', 'npr', 'nqr', 'ftr', 'fuso', 'kenworth', 'peterbilt', 'freightliner', 'international']
+};
+
+window.filterByCategory = function(category) {
+    // Update chip active state
+    document.querySelectorAll('.category-chip').forEach(chip => {
+        chip.classList.toggle('active', chip.getAttribute('data-category') === category);
+    });
+
+    // Reset inventory header text
+    const headerP = document.querySelector('.inventory-section .section-header p');
+    if (headerP) {
+        headerP.style.color = '';
+    }
+
+    if (category === 'todos') {
+        renderVehicles(allVehicles);
+        if (headerP) headerP.textContent = 'Vehículos disponibles, revisados y listos para ti.';
+        document.getElementById('inventario').scrollIntoView({ behavior: 'smooth' });
+        return;
+    }
+
+    const keywords = CATEGORY_KEYWORDS[category] || [];
+
+    const filtered = allVehicles.filter(car => {
+        const text = `${car.make} ${car.model} ${car.year} ${car.motor}`.toLowerCase();
+        return keywords.some(kw => text.includes(kw));
+    });
+
+    renderVehicles(filtered);
+
+    const categoryLabels = {
+        sedan: 'Sedán', suv: 'SUV / Pick-up', van: 'Van / Minivan',
+        deportivo: 'Deportivos', camion: 'Camiones'
+    };
+
+    if (headerP) {
+        if (filtered.length > 0) {
+            headerP.textContent = `${filtered.length} vehículo(s) en categoría "${categoryLabels[category]}"`;
+            headerP.style.color = '#a3e635';
+        } else {
+            headerP.textContent = `No tenemos "${categoryLabels[category]}" en este momento. Mostrando todo.`;
+            headerP.style.color = '#f87171';
+            setTimeout(() => {
+                renderVehicles(allVehicles);
+                headerP.textContent = 'Vehículos disponibles, revisados y listos para ti.';
+                headerP.style.color = '';
+            }, 2500);
+        }
+    }
+
+    document.getElementById('inventario').scrollIntoView({ behavior: 'smooth' });
+};

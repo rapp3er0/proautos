@@ -1074,3 +1074,280 @@ footer {
     width: 100%;
     margin-top: auto;
 }
+
+/* =========================================
+   Google Sign-In Popup (slide-in right)
+   ========================================= */
+.google-popup {
+    position: fixed;
+    bottom: 120px;
+    right: -360px; /* hidden off screen */
+    width: 320px;
+    background: rgba(20, 22, 30, 0.97);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    padding: 1.75rem;
+    z-index: 500;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,0.05);
+    transition: right 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+.google-popup.visible {
+    right: 24px;
+}
+
+.google-popup-overlay {
+    display: none;
+}
+
+.google-popup-close {
+    position: absolute;
+    top: 0.85rem;
+    right: 1rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: var(--text-muted);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+}
+
+.google-popup-close:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+.google-popup-header {
+    text-align: center;
+}
+
+.google-popup-logo {
+    height: 44px;
+    margin-bottom: 0.75rem;
+}
+
+.google-popup-header h3 {
+    font-size: 1.05rem;
+    color: var(--text-main);
+    margin-bottom: 0.4rem;
+}
+
+.google-popup-header p {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.google-signin-btn {
+    display: flex;
+    justify-content: center;
+    margin: 0.25rem 0;
+}
+
+.google-popup-note {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.4;
+}
+
+.google-popup-note a {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+/* Logged-in state in popup */
+.google-user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 0.75rem;
+}
+
+.google-user-info img {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px solid var(--primary-color);
+}
+
+.google-user-info .user-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.google-user-info .user-email {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* =========================================
+   Hero Badge + Categories + Search Box
+   ========================================= */
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(209, 0, 0, 0.18);
+    border: 1px solid rgba(209, 0, 0, 0.4);
+    color: #ff6b6b;
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    animation: fadeInDown 0.8s ease;
+    letter-spacing: 0.3px;
+}
+
+.hero-badge i {
+    color: #ffcc00;
+    font-size: 0.75rem;
+}
+
+.hero-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    justify-content: center;
+    margin: 1.75rem 0 1.5rem;
+    animation: fadeInUp 0.9s ease 0.2s both;
+}
+
+.category-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--text-main);
+    transition: all 0.25s ease;
+    font-family: 'Inter', sans-serif;
+    backdrop-filter: blur(8px);
+}
+
+.category-chip:hover {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.category-chip.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 18px rgba(209, 0, 0, 0.45);
+}
+
+.chip-emoji {
+    font-size: 1.05rem;
+    line-height: 1;
+}
+
+/* Hero Search Box */
+.hero-search-box {
+    background: rgba(15, 15, 17, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 1rem;
+    max-width: 700px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    animation: fadeInUp 1s ease 0.4s both;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.hero-search-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.hero-search-icon {
+    position: absolute;
+    left: 1rem;
+    color: var(--text-muted);
+    font-size: 1rem;
+    pointer-events: none;
+}
+
+.hero-search-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: white;
+    padding: 0.85rem 1rem 0.85rem 2.75rem;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: border-color 0.3s, background 0.3s;
+}
+
+.hero-search-input::placeholder {
+    color: rgba(160, 160, 160, 0.65);
+}
+
+.hero-search-input:focus {
+    border-color: var(--primary-color);
+    background: rgba(255, 255, 255, 0.09);
+}
+
+.hero-search-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.hero-search-btn {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive for hero search */
+@media (max-width: 768px) {
+    .hero-search-actions {
+        flex-direction: column;
+    }
+    .hero-categories {
+        gap: 0.5rem;
+    }
+    .category-chip {
+        font-size: 0.78rem;
+        padding: 0.45rem 0.85rem;
+    }
+    .google-popup {
+        width: 290px;
+        bottom: 100px;
+    }
+}
